@@ -20,3 +20,12 @@ document.getElementById('vplForm').addEventListener('submit', function(event) {
         resultadoDiv.innerHTML = `<p>O VPL é R$ ${vpl.toFixed(2)}. O projeto não é viável.</p>`;
     }
 });
+
+// Função para limpar os inputs
+document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('investimento').value = '';
+    document.getElementById('taxa').value = '';
+    document.getElementById('fluxos').value = '';
+    document.getElementById('resultado').innerHTML = '';
+});
+
