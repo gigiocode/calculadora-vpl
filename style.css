@@ -81,18 +81,18 @@ button:hover {
 }
 
 footer {
-  color: #590185;
+  color: #070982;
   text-align-last: auto;
   padding: 10px 10px;
   margin-top: 10px;
-  font-size: 1.6rem;
-  background-color: #e3f2fd;
   text-decoration: none;
 }
 
 footer a {
-  color: #590185;
+  color: #070982;
   text-decoration: none;
+  font-size: 1.2rem;
+  font-family: "roboto";
 }
 
 footer a:hover {
