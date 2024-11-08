@@ -3,24 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparador de VPL de Fornecedores</title>
+    <title>Calculadora de VPL para BID</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <h1>Comparador de Valor Presente Líquido (VPL) de Fornecedores</h1>
-        <form id="formFornecedores">
-            <label for="numFornecedores">Quantidade de Fornecedores:</label>
-            <input type="number" id="numFornecedores" min="2" placeholder="Ex: 2" required>
+        <h1>Calculadora de VPL para BID entre Fornecedores</h1>
+        
+        <form id="vplForm">
+            <h2>Parâmetros Gerais</h2>
+            <label for="taxaDesconto">Taxa de Desconto (%):</label>
+            <input type="number" id="taxaDesconto" step="0.01" placeholder="Ex: 10" required>
 
-            <button type="button" id="gerarFornecedores">Gerar Campos</button>
-        </form>
+            <h2>Fornecedor 1</h2>
+            <label for="valorTotal1">Valor Total da Proposta:</label>
+            <input type="number" id="valorTotal1" placeholder="Ex: 1000000" required>
 
-        <form id="formVPL" style="display: none;">
-            <div id="fornecedoresContainer"></div>
-            <button type="submit">Calcular Melhor Proposta</button>
-            <button type="button" id="resetBtn">Zerar Campos</button>
+            <label for="desembolsos1">Cronograma de Pagamentos (valores separados por vírgula):</label>
+            <input type="text" id="desembolsos1" placeholder="Ex: 250000, 250000, 250000, 250000" required>
+
+            <label for="diasPagamentos1">Dias de Pagamento (dias separados por vírgula):</label>
+            <input type="text" id="diasPagamentos1" placeholder="Ex: 30, 60, 90, 120" required>
+
+            <h2>Fornecedor 2</h2>
+            <label for="valorTotal2">Valor Total da Proposta:</label>
+            <input type="number" id="valorTotal2" placeholder="Ex: 1000000" required>
+
+            <label for="desembolsos2">Cronograma de Pagamentos (valores separados por vírgula):</label>
+            <input type="text" id="desembolsos2" placeholder="Ex: 1000000" required>
+
+            <label for="diasPagamentos2">Dias de Pagamento (dias separados por vírgula):</label>
+            <input type="text" id="diasPagamentos2" placeholder="Ex: 90" required>
+
+            <button type="button" onclick="calcularVPL()">Calcular Melhor Proposta</button>
         </form>
 
         <div id="resultado"></div>

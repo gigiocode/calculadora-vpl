@@ -1,65 +1,37 @@
-document.getElementById('gerarFornecedores').addEventListener('click', function() {
-    const numFornecedores = parseInt(document.getElementById('numFornecedores').value);
-    const fornecedoresContainer = document.getElementById('fornecedoresContainer');
-    fornecedoresContainer.innerHTML = ''; // Limpa o container
+function calcularVPL() {
+    const taxaDesconto = parseFloat(document.getElementById("taxaDesconto").value) / 100;
 
-    for (let i = 0; i < numFornecedores; i++) {
-        const fornecedorDiv = document.createElement('div');
-        fornecedorDiv.className = 'fornecedor';
-
-        fornecedorDiv.innerHTML = `
-            <h3>Fornecedor ${i + 1}</h3>
-            <label for="valor${i}">Valor Total da Proposta (R$):</label>
-            <input type="number" id="valor${i}" required>
-
-            <label for="taxa${i}">Taxa de Desconto (%):</label>
-            <input type="number" id="taxa${i}" required step="0.01">
-
-            <label for="desembolsos${i}">Cronograma de Desembolsos (separado por vírgulas):</label>
-            <input type="text" id="desembolsos${i}" placeholder="Ex: 5000, 5000, 5000" required>
-        `;
-        fornecedoresContainer.appendChild(fornecedorDiv);
+    // Função para calcular o VPL de uma série de desembolsos com taxa anual
+    function calcularVPLEquivalente(desembolsos, diasPagamentos, taxaAnual) {
+        let vpl = 0;
+        for (let i = 0; i < desembolsos.length; i++) {
+            const tempoAnos = diasPagamentos[i] / 365; // Conversão dos dias para anos
+            vpl += desembolsos[i] / Math.pow(1 + taxaAnual, tempoAnos);  // Fórmula para calcular o valor presente
+        }
+        return vpl;
     }
 
-    document.getElementById('formVPL').style.display = 'block';
-});
+    // Fornecedor 1
+    const valorTotal1 = parseFloat(document.getElementById("valorTotal1").value);
+    const desembolsos1 = document.getElementById("desembolsos1").value.split(',').map(Number);
+    const diasPagamentos1 = document.getElementById("diasPagamentos1").value.split(',').map(Number);
+    const vpl1 = calcularVPLEquivalente(desembolsos1, diasPagamentos1, taxaDesconto);
 
-document.getElementById('formVPL').addEventListener('submit', function(event) {
-    event.preventDefault();
+    // Fornecedor 2
+    const valorTotal2 = parseFloat(document.getElementById("valorTotal2").value);
+    const desembolsos2 = document.getElementById("desembolsos2").value.split(',').map(Number);
+    const diasPagamentos2 = document.getElementById("diasPagamentos2").value.split(',').map(Number);
+    const vpl2 = calcularVPLEquivalente(desembolsos2, diasPagamentos2, taxaDesconto);
 
-    const numFornecedores = parseInt(document.getElementById('numFornecedores').value);
-    let melhorVPL = -Infinity;
-    let fornecedorVencedor = -1;
-    let resultados = '';
+    // Determinar fornecedor vencedor
+    let resultado = `<p>Fornecedor 1 - VPL: R$ ${vpl1.toFixed(2)}</p>`;
+    resultado += `<p>Fornecedor 2 - VPL: R$ ${vpl2.toFixed(2)}</p>`;
 
-    for (let i = 0; i < numFornecedores; i++) {
-        const valorTotal = parseFloat(document.getElementById(`valor${i}`).value);
-        const taxaDesconto = parseFloat(document.getElementById(`taxa${i}`).value) / 100;
-        const desembolsos = document.getElementById(`desembolsos${i}`).value.split(',').map(Number);
-
-        let vpl = -valorTotal;
-        for (let j = 0; j < desembolsos.length; j++) {
-            vpl += desembolsos[j] / Math.pow(1 + taxaDesconto, (j + 1) * 0.5);
-        }
-
-        resultados += `<p>Fornecedor ${i + 1} - VPL: R$ ${vpl.toFixed(2)}</p>`;
-
-        if (vpl > melhorVPL) {
-            melhorVPL = vpl;
-            fornecedorVencedor = i + 1;
-        }
+    if (vpl1 < vpl2) {
+        resultado += `<p><strong>Fornecedor Vencedor: Fornecedor 1 com VPL de R$ ${vpl1.toFixed(2)}</strong></p>`;
+    } else {
+        resultado += `<p><strong>Fornecedor Vencedor: Fornecedor 2 com VPL de R$ ${vpl2.toFixed(2)}</strong></p>`;
     }
 
-    resultados += `<p><strong>Fornecedor Vencedor: Fornecedor ${fornecedorVencedor} com VPL de R$ ${melhorVPL.toFixed(2)}</strong></p>`;
-    document.getElementById('resultado').innerHTML = resultados;
-});
-
-// Função para limpar os inputs
-document.getElementById('resetBtn').addEventListener('click', function() {
-    document.getElementById('formFornecedores').reset();
-    document.getElementById('fornecedoresContainer').innerHTML = '';
-    document.getElementById('formVPL').style.display = 'none';
-    document.getElementById('resultado').innerHTML = '';
-});
-
-
+    document.getElementById("resultado").innerHTML = resultado;
+}
