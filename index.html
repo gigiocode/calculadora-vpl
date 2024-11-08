@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de VPL</title>
+    <title>Comparador de VPL de Fornecedores</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <h1>Calculadora de Valor Presente Líquido (VPL)</h1>
-        <p>Exemplo prático: Suponha que um projeto exige um investimento inicial de R$ 10.000 e trará fluxos de caixa de R$ 2.000, R$ 3.000 e R$ 4.000 nos próximos três anos, com uma taxa de desconto de 10%. O VPL pode ser calculado com esses valores.</p>
+        <h1>Comparador de Valor Presente Líquido (VPL) de Fornecedores</h1>
+        <form id="formFornecedores">
+            <label for="numFornecedores">Quantidade de Fornecedores:</label>
+            <input type="number" id="numFornecedores" min="2" placeholder="Ex: 2" required>
 
-        <form id="vplForm">
-            <label for="investimento">Investimento Inicial (R$):</label>
-            <input type="number" id="investimento" placeholder="Ex: 10000" required>
+            <button type="button" id="gerarFornecedores">Gerar Campos</button>
+        </form>
 
-            <label for="taxa">Taxa de Desconto (%):</label>
-            <input type="number" id="taxa" placeholder="Ex: 10" required step="0.01">
-
-            <label for="fluxos">Fluxo de Caixa Anual (separado por vírgula):</label>
-            <input type="text" id="fluxos" placeholder="Ex: 2000, 3000, 4000" required>
-
-            <button type="submit">Calcular VPL</button>
+        <form id="formVPL" style="display: none;">
+            <div id="fornecedoresContainer"></div>
+            <button type="submit">Calcular Melhor Proposta</button>
             <button type="button" id="resetBtn">Zerar Campos</button>
         </form>
 
