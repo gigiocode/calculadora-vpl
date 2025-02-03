@@ -1,52 +1,352 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de VPL para BID</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Calculadora VPL Profissional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #2980b9;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --text: #333;
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: white;
+        }
+
+        .supplier-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(41,128,185,0.25);
+        }
+
+        #chartContainer {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            margin: 2rem 0;
+        }
+
+        .result-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            margin: 2rem 0;
+        }
+
+        .frequency-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .custom-days-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .best-result {
+            background: #e8f5e9;
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Calculadora de VPL para BID entre Fornecedores</h1>
-        
-        <form id="vplForm">
-            <h2>Parâmetros Gerais</h2>
-            <label for="taxaDesconto">Taxa de Desconto (%):</label>
-            <input type="number" id="taxaDesconto" step="0.01" placeholder="Ex: 10" required>
+        <header class="header">
+            <h1>Calculadora de VPL Avançada</h1>
+            <p>Análise comparativa de propostas comerciais</p>
+        </header>
 
-            <h2>Fornecedor 1</h2>
-            <label for="valorTotal1">Valor Total da Proposta:</label>
-            <input type="number" id="valorTotal1" placeholder="Ex: 1000000" required>
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="addSupplier()">
+                <i class="fas fa-plus"></i> Novo Fornecedor
+            </button>
+            <button class="btn btn-primary" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+            </button>
+        </div>
 
-            <label for="desembolsos1">Cronograma de Pagamentos (valores separados por vírgula):</label>
-            <input type="text" id="desembolsos1" placeholder="Ex: 250000, 250000, 250000, 250000" required>
+        <form id="mainForm">
+            <div class="form-group">
+                <label>Taxa de Desconto Anual (%)</label>
+                <input type="text" id="taxa" required placeholder="Ex: 12,5">
+            </div>
 
-            <label for="diasPagamentos1">Dias de Pagamento (dias separados por vírgula):</label>
-            <input type="text" id="diasPagamentos1" placeholder="Ex: 30, 60, 90, 120" required>
-
-            <h2>Fornecedor 2</h2>
-            <label for="valorTotal2">Valor Total da Proposta:</label>
-            <input type="number" id="valorTotal2" placeholder="Ex: 1000000" required>
-
-            <label for="desembolsos2">Cronograma de Pagamentos (valores separados por vírgula):</label>
-            <input type="text" id="desembolsos2" placeholder="Ex: 1000000" required>
-
-            <label for="diasPagamentos2">Dias de Pagamento (dias separados por vírgula):</label>
-            <input type="text" id="diasPagamentos2" placeholder="Ex: 90" required>
-
-            <button type="button" onclick="calcularVPL()">Calcular Melhor Proposta</button>
+            <div id="suppliersContainer"></div>
         </form>
 
-        <div id="resultado"></div>
+        <div id="chartContainer">
+            <canvas id="vplChart"></canvas>
+        </div>
+
+        <div class="result-section" id="results"></div>
     </div>
 
-    <footer>
-        <p><a href="https://github.com/gigiocode" target="_blank">Gigio D3V ✈️</a></p>
-    </footer>
+    <template id="supplierTemplate">
+        <div class="supplier-card">
+            <div class="form-group">
+                <label>Nome do Fornecedor</label>
+                <input type="text" class="supplier-name" value="Fornecedor 1" required>
+            </div>
+            <div class="form-group">
+                <label>Valor Total (R$)</label>
+                <input type="text" class="total-input" required placeholder="Ex: 1.000.000,00">
+            </div>
+            <div class="frequency-group">
+                <div style="flex: 1">
+                    <label>Frequência de Pagamento</label>
+                    <select class="frequency-select" onchange="updatePaymentSchedule(this)">
+                        <option value="">Personalizado</option>
+                        <option value="30;36">Mensal (3 anos)</option>
+                        <option value="90;12">Trimestral (3 anos)</option>
+                        <option value="180;6">Semestral (3 anos)</option>
+                        <option value="365;3">Anual (3 anos)</option>
+                    </select>
+                </div>
+                <div class="custom-days-toggle">
+                    <input type="checkbox" class="custom-days-check" onchange="toggleCustomDays(this)">
+                    <label>Editar Dias</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Pagamentos (R$ separados por ;)</label>
+                <input type="text" class="payments-input" required placeholder="Ex: 250.000,00; 250.000,00;...">
+            </div>
+            <div class="form-group">
+                <label>Dias (separados por ;)</label>
+                <input type="text" class="days-input" required placeholder="Ex: 30; 60; 90;..." disabled>
+            </div>
+        </div>
+    </template>
 
-    <script src="script.js"></script>
+    <script>
+        let chart = null;
+        let suppliers = [];
+        let timeout;
+
+        const formatNumber = num => 
+            new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(num);
+
+        const parseNumber = str => 
+            parseFloat(str.replace(/\./g, '').replace(',', '.'));
+
+        function updatePaymentSchedule(select) {
+            const card = select.closest('.supplier-card');
+            const daysInput = card.querySelector('.days-input');
+            const [interval, periods] = select.value.split(';').map(Number);
+            
+            if(interval && periods) {
+                const days = Array.from({length: periods}, (_, i) => (i + 1) * interval);
+                daysInput.value = days.join('; ');
+                daysInput.disabled = true;
+                card.querySelector('.custom-days-check').checked = false;
+            }
+        }
+
+        function toggleCustomDays(checkbox) {
+            const card = checkbox.closest('.supplier-card');
+            const daysInput = card.querySelector('.days-input');
+            daysInput.disabled = !checkbox.checked;
+        }
+
+        function addSupplier() {
+            const template = document.getElementById('supplierTemplate');
+            const clone = template.content.cloneNode(true);
+            suppliers.push(clone);
+            document.getElementById('suppliersContainer').appendChild(clone);
+        }
+
+        function calculateVPL() {
+            try {
+                const taxa = parseNumber(document.getElementById('taxa').value) / 100;
+                const results = [];
+                
+                document.querySelectorAll('.supplier-card').forEach(card => {
+                    const name = card.querySelector('.supplier-name').value;
+                    const total = parseNumber(card.querySelector('.total-input').value);
+                    const payments = card.querySelector('.payments-input').value
+                        .split(';').map(v => parseNumber(v.trim()));
+                    const days = card.querySelector('.days-input').value
+                        .split(';').map(v => parseInt(v.trim()));
+                    
+                    const vpl = payments.reduce((acc, val, i) => 
+                        acc + (val / Math.pow(1 + taxa, days[i]/365)), 0);
+                        
+                    results.push({ name, vpl, total });
+                });
+
+                updateChart(results);
+                showResults(results);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('vplChart').getContext('2d');
+            if(chart) chart.destroy();
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        label: 'VPL (R$)',
+                        data: data.map(d => d.vpl),
+                        backgroundColor: data.map((_, i) => 
+                            `hsl(${(i * 360)/data.length}, 70%, 50%)`
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => 
+                                    `R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showResults(data) {
+            const best = data.reduce((a, b) => a.vpl < b.vpl ? a : b);
+            const html = `
+                <h3>Resultado Final</h3>
+                ${data.map(d => `
+                    <div class="result-item">
+                        <h4>${d.name}</h4>
+                        <p>VPL: R$ ${formatNumber(d.vpl)}</p>
+                        <p>Valor Total: R$ ${formatNumber(d.total)}</p>
+                    </div>
+                `).join('')}
+                <div class="best-result">
+                    🏆 Melhor Proposta: ${best.name}<br>
+                    VPL: R$ ${formatNumber(best.vpl)} | 
+                    Valor Total: R$ ${formatNumber(best.total)}
+                </div>
+            `;
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Adicionar gráfico
+            const chartImg = document.getElementById('vplChart').toDataURL();
+            doc.addImage(chartImg, 'PNG', 15, 15, 180, 100);
+            
+            // Adicionar resultados
+            const bestResult = document.getElementById('results').innerText;
+            doc.setFontSize(12);
+            doc.text(bestResult, 15, 130);
+            
+            doc.save('relatorio-vpl.pdf');
+        }
+
+        // Atualização automática
+        document.getElementById('mainForm').addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(calculateVPL, 1000);
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            addSupplier();
+            calculateVPL();
+        });
+    </script>
 </body>
 </html>
-
