@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora VPL Profissional</title>
+    <title>Calculadora VPL Inteligente</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
@@ -115,18 +115,18 @@
             margin: 2rem 0;
         }
 
-        .frequency-group {
-            display: flex;
+        .frequency-controls {
+            display: grid;
+            grid-template-columns: 1fr 100px;
             gap: 1rem;
-            align-items: center;
             margin-bottom: 1rem;
         }
 
-        .custom-days-toggle {
+        .auto-calculate-toggle {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            cursor: pointer;
+            margin: 0.5rem 0;
         }
 
         .best-result {
@@ -140,8 +140,8 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>Calculadora de VPL Avançada</h1>
-            <p>Análise comparativa de propostas comerciais</p>
+            <h1>Calculadora de VPL Inteligente</h1>
+            <p>Análise completa de propostas comerciais</p>
         </header>
 
         <div class="toolbar">
@@ -171,37 +171,52 @@
 
     <template id="supplierTemplate">
         <div class="supplier-card">
+            <div class="auto-calculate-toggle">
+                <input type="checkbox" class="auto-calculate-check" checked 
+                       onchange="toggleAutoCalculate(this)">
+                <label>Calcular automaticamente</label>
+            </div>
+            
+            <!-- Campo do Nome do Fornecedor -->
             <div class="form-group">
                 <label>Nome do Fornecedor</label>
                 <input type="text" class="supplier-name" value="Fornecedor 1" required>
             </div>
+
             <div class="form-group">
                 <label>Valor Total (R$)</label>
-                <input type="text" class="total-input" required placeholder="Ex: 1.000.000,00">
+                <input type="text" class="total-input" required 
+                       placeholder="Ex: 1.000.000,00"
+                       oninput="handleTotalInput(this)">
             </div>
-            <div class="frequency-group">
-                <div style="flex: 1">
-                    <label>Frequência de Pagamento</label>
-                    <select class="frequency-select" onchange="updatePaymentSchedule(this)">
-                        <option value="">Personalizado</option>
-                        <option value="30;36">Mensal (3 anos)</option>
-                        <option value="90;12">Trimestral (3 anos)</option>
-                        <option value="180;6">Semestral (3 anos)</option>
-                        <option value="365;3">Anual (3 anos)</option>
+
+            <div class="frequency-controls">
+                <div>
+                    <label>Frequência</label>
+                    <select class="frequency-type" onchange="updatePaymentSchedule(this)">
+                        <option value="30">Mensal</option>
+                        <option value="90">Trimestral</option>
+                        <option value="180">Semestral</option>
+                        <option value="365">Anual</option>
                     </select>
                 </div>
-                <div class="custom-days-toggle">
-                    <input type="checkbox" class="custom-days-check" onchange="toggleCustomDays(this)">
-                    <label>Editar Dias</label>
+                <div>
+                    <label>Períodos</label>
+                    <input type="number" class="periods-input" min="1" value="3" 
+                           onchange="updatePaymentSchedule(this)">
                 </div>
             </div>
+
             <div class="form-group">
                 <label>Pagamentos (R$ separados por ;)</label>
-                <input type="text" class="payments-input" required placeholder="Ex: 250.000,00; 250.000,00;...">
+                <input type="text" class="payments-input" required 
+                       placeholder="Ex: 250.000,00; 250.000,00;...">
             </div>
+
             <div class="form-group">
                 <label>Dias (separados por ;)</label>
-                <input type="text" class="days-input" required placeholder="Ex: 30; 60; 90;..." disabled>
+                <input type="text" class="days-input" required 
+                       placeholder="Ex: 30; 60; 90;...">
             </div>
         </div>
     </template>
@@ -211,36 +226,67 @@
         let suppliers = [];
         let timeout;
 
+        // Funções de formatação
         const formatNumber = num => 
-            new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(num);
+            new Intl.NumberFormat('pt-BR', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            }).format(num);
 
         const parseNumber = str => 
-            parseFloat(str.replace(/\./g, '').replace(',', '.'));
+            parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
 
-        function updatePaymentSchedule(select) {
-            const card = select.closest('.supplier-card');
-            const daysInput = card.querySelector('.days-input');
-            const [interval, periods] = select.value.split(';').map(Number);
+        // Funções de cálculo automático
+        function calculatePaymentsAndDays(card) {
+            if(!card.querySelector('.auto-calculate-check').checked) return;
             
-            if(interval && periods) {
-                const days = Array.from({length: periods}, (_, i) => (i + 1) * interval);
-                daysInput.value = days.join('; ');
-                daysInput.disabled = true;
-                card.querySelector('.custom-days-check').checked = false;
-            }
+            const total = parseNumber(card.querySelector('.total-input').value);
+            const frequency = parseInt(card.querySelector('.frequency-type').value);
+            const periods = parseInt(card.querySelector('.periods-input').value);
+            
+            if(!total || !frequency || !periods) return;
+
+            // Calcular pagamentos
+            const paymentValue = total / periods;
+            const paymentsInput = card.querySelector('.payments-input');
+            paymentsInput.value = Array(periods).fill(formatNumber(paymentValue)).join('; ');
+
+            // Calcular dias
+            const daysInput = card.querySelector('.days-input');
+            const days = Array.from({length: periods}, (_, i) => (i + 1) * frequency);
+            daysInput.value = days.join('; ');
         }
 
-        function toggleCustomDays(checkbox) {
+        function handleTotalInput(input) {
+            const card = input.closest('.supplier-card');
+            calculatePaymentsAndDays(card);
+            calculateVPL();
+        }
+
+        function toggleAutoCalculate(checkbox) {
             const card = checkbox.closest('.supplier-card');
             const daysInput = card.querySelector('.days-input');
-            daysInput.disabled = !checkbox.checked;
+            const paymentsInput = card.querySelector('.payments-input');
+            
+            daysInput.disabled = checkbox.checked;
+            paymentsInput.disabled = checkbox.checked;
+            
+            if(checkbox.checked) calculatePaymentsAndDays(card);
         }
 
+        function updatePaymentSchedule(element) {
+            const card = element.closest('.supplier-card');
+            calculatePaymentsAndDays(card);
+            calculateVPL();
+        }
+
+        // Funções principais
         function addSupplier() {
             const template = document.getElementById('supplierTemplate');
             const clone = template.content.cloneNode(true);
-            suppliers.push(clone);
             document.getElementById('suppliersContainer').appendChild(clone);
+            calculatePaymentsAndDays(clone.querySelector('.supplier-card'));
+            calculateVPL();
         }
 
         function calculateVPL() {
@@ -305,7 +351,7 @@
             const html = `
                 <h3>Resultado Final</h3>
                 ${data.map(d => `
-                    <div class="result-item">
+                    <div style="margin-bottom: 1rem;">
                         <h4>${d.name}</h4>
                         <p>VPL: R$ ${formatNumber(d.vpl)}</p>
                         <p>Valor Total: R$ ${formatNumber(d.total)}</p>
@@ -336,17 +382,14 @@
             doc.save('relatorio-vpl.pdf');
         }
 
-        // Atualização automática
+        // Event listeners
         document.getElementById('mainForm').addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(calculateVPL, 1000);
         });
 
         // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            addSupplier();
-            calculateVPL();
-        });
+        document.addEventListener('DOMContentLoaded', addSupplier);
     </script>
 </body>
 </html>
